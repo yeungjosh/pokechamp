@@ -1,0 +1,35 @@
+Tauros
+- Body Slam
+- Hyper Beam
+- Earthquake
+- Blizzard
+
+Chansey
+- Ice Beam
+- Soft-Boiled
+- Sing
+- Thunder Wave
+
+Snorlax
+- Body Slam
+- Earthquake
+- Self-Destruct
+- Rest
+
+Exeggutor
+- Sleep Powder
+- Psychic
+- Explosion
+- Double-Edge
+
+Starmie
+- Thunderbolt
+- Blizzard
+- Recover
+- Psychic
+
+Gengar
+- Hypnosis
+- Thunderbolt
+- Explosion
+- Night Shade

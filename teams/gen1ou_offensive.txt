@@ -1,0 +1,35 @@
+Tauros
+- Body Slam
+- Hyper Beam
+- Earthquake
+- Blizzard
+
+Chansey
+- Ice Beam
+- Soft-Boiled
+- Thunder Wave
+- Reflect
+
+Snorlax
+- Body Slam
+- Earthquake
+- Hyper Beam
+- Rest
+
+Starmie
+- Thunderbolt
+- Blizzard
+- Recover
+- Surf
+
+Rhydon
+- Earthquake
+- Rock Slide
+- Body Slam
+- Substitute
+
+Zapdos
+- Thunderbolt
+- Drill Peck
+- Thunder Wave
+- Agility
