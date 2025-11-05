@@ -8,11 +8,23 @@ Generates detailed performance reports for portfolio.
 
 import asyncio
 import json
+import sys
 from datetime import datetime
 from pathlib import Path
-from bots.gen1_agent import Gen1Agent
+
+# Add current directory to path
+sys.path.insert(0, str(Path(__file__).parent))
+
+# Import directly to avoid circular imports
 from poke_env.player.random_player import RandomPlayer
 from poke_env.player.max_damage_player import MaxDamagePlayer
+
+# Import Gen1Agent after poke_env
+import importlib.util
+spec = importlib.util.spec_from_file_location("gen1_agent", "bots/gen1_agent.py")
+gen1_module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(gen1_module)
+Gen1Agent = gen1_module.Gen1Agent
 
 
 async def test_matchup(agent_name, agent, opponent_name, opponent, n_battles=20):
