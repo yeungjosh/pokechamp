@@ -273,52 +273,193 @@ class Gen1Agent(Player):
 
         return score
 
+    def _evaluate_position(self, battle: Battle) -> float:
+        """
+        Comprehensive position evaluation.
+        Returns positive score if we're winning, negative if losing.
+        """
+        score = 0.0
+
+        # Material advantage (weighted HP)
+        our_material = 0.0
+        opp_material = 0.0
+
+        for pokemon in battle.team.values():
+            if not pokemon.fainted:
+                mon_name = pokemon.species.lower().replace(" ", "")
+                base_value = MATERIAL_VALUES.get(mon_name, 140)
+                hp_fraction = pokemon.current_hp_fraction
+
+                # Status modifier
+                status_mult = 1.0
+                if pokemon.status == Status.SLP:
+                    status_mult = 0.3  # Sleep heavily reduces value
+                elif pokemon.status == Status.PAR:
+                    status_mult = 0.85
+                elif pokemon.status == Status.BRN:
+                    status_mult = 0.7
+                elif pokemon.status == Status.FRZ:
+                    status_mult = 0.1  # Frozen is nearly dead in Gen1
+
+                our_material += base_value * hp_fraction * status_mult
+
+        # Opponent material (estimate based on what we've seen)
+        for pokemon in battle.opponent_team.values():
+            if pokemon and not pokemon.fainted:
+                mon_name = pokemon.species.lower().replace(" ", "")
+                base_value = MATERIAL_VALUES.get(mon_name, 140)
+                hp_fraction = pokemon.current_hp_fraction if pokemon.current_hp_fraction else 1.0
+
+                status_mult = 1.0
+                if pokemon.status == Status.SLP:
+                    status_mult = 0.3
+                elif pokemon.status == Status.PAR:
+                    status_mult = 0.85
+                elif pokemon.status == Status.FRZ:
+                    status_mult = 0.1
+
+                opp_material += base_value * hp_fraction * status_mult
+
+        score += (our_material - opp_material) * 0.5
+
+        # Sleep advantage (huge in Gen1)
+        our_sleeping = sum(1 for p in battle.team.values() if not p.fainted and p.status == Status.SLP)
+        opp_sleeping = sum(1 for p in battle.opponent_team.values() if p and not p.fainted and p.status == Status.SLP)
+        score += (opp_sleeping - our_sleeping) * 40
+
+        # Tauros advantage (if we have Tauros alive and healthy)
+        our_tauros = next((p for p in battle.team.values() if "tauros" in p.species.lower() and not p.fainted), None)
+        opp_tauros = next((p for p in battle.opponent_team.values() if p and "tauros" in p.species.lower() and not p.fainted), None)
+        if our_tauros and our_tauros.current_hp_fraction > 0.6:
+            score += 25
+        if opp_tauros and (not hasattr(opp_tauros, 'current_hp_fraction') or opp_tauros.current_hp_fraction > 0.6):
+            score -= 25
+
+        return score
+
+    def _can_survive_hit(self, defender: Pokemon, attacker: Pokemon) -> bool:
+        """
+        Check if defender can likely survive one hit from attacker.
+        Uses common Gen1 move expectations.
+        """
+        # Estimate strongest likely attack
+        attacker_name = attacker.species.lower().replace(" ", "")
+
+        # Common strong moves by type
+        common_attacks = []
+        if attacker.type_1:
+            type_name = attacker.type_1.name.upper()
+            if type_name == "NORMAL":
+                common_attacks.append(("bodyslam", 85))
+            elif type_name == "PSYCHIC":
+                common_attacks.append(("psychic", 90))
+            elif type_name == "ICE":
+                common_attacks.append(("blizzard", 120))
+            elif type_name == "ELECTRIC":
+                common_attacks.append(("thunderbolt", 95))
+
+        # Estimate max damage
+        max_dmg = 0
+        for move_name, power in common_attacks:
+            # Simplified damage estimate
+            type_mult = 1.0
+            if defender.type_1:
+                # Rough type effectiveness
+                pass
+
+            # Rough damage: ~30-40% for super effective, ~15-25% for neutral
+            estimated_dmg_pct = power / 400 * 1.5  # Conservative estimate
+            max_dmg = max(max_dmg, estimated_dmg_pct)
+
+        # If we don't know moves, assume 30% damage
+        if max_dmg == 0:
+            max_dmg = 0.3
+
+        return defender.current_hp_fraction > max_dmg
+
     def _score_switch(self, battle: Battle, switch: Pokemon) -> float:
         """
-        Score a switch based on matchup quality and strategic value.
+        Enhanced switch scoring with defensive and offensive matchup analysis.
         """
         if not battle.opponent_active_pokemon:
             return 0.0
 
         opponent = battle.opponent_active_pokemon
+        current = battle.active_pokemon
         score = 0.0
 
-        # Don't switch if we have a good matchup and high HP
-        current = battle.active_pokemon
-        if current and current.current_hp_fraction > 0.7:
-            # Check if current matchup is decent
+        # Check if we MUST switch (about to faint)
+        if current and current.current_hp_fraction < 0.2:
+            score += 200  # Switching is likely necessary
+
+        # Check if current matchup is still good
+        if current and current.current_hp_fraction > 0.5:
             for move in battle.available_moves:
                 type_eff = self._get_type_effectiveness(
                     move.type.name if move.type else "NORMAL", opponent
                 )
-                if type_eff >= 1.0:
-                    return -100  # Stay in if we have neutral/positive matchup
+                if type_eff >= 1.5:
+                    return -150  # Stay in if we have super effective moves
+                elif type_eff >= 1.0:
+                    return -100  # Stay in if neutral or better
 
         # Material value of switch target
         switch_name = switch.species.lower().replace(" ", "")
         base_value = MATERIAL_VALUES.get(switch_name, 140)
-        score += base_value
+        score += base_value * 0.5
 
-        # HP factor
-        score *= switch.current_hp_fraction
+        # HP factor (healthy mons preferred)
+        score += switch.current_hp_fraction * 100
 
-        # Check defensive matchup (can we survive?)
-        # Simplified: check type matchup
-        defensive_score = 0
-        for opp_move_id in opponent.moves:
-            # This is simplified - in reality we'd need to estimate opponent moves
-            pass
+        # Defensive matchup: can switch-in survive?
+        if self._can_survive_hit(switch, opponent):
+            score += 150
+        else:
+            score -= 200  # Switching into death is bad
 
-        # Offensive matchup (can we threaten?)
+        # Offensive matchup: check type advantage of our moves
+        offensive_bonus = 0
         for move_id in switch.moves:
-            # Simplified evaluation
-            pass
+            # Try to get move type from known moves
+            if hasattr(self.gen_data, 'moves') and move_id in self.gen_data.moves:
+                move_data = self.gen_data.moves[move_id]
+                move_type = move_data.get('type', 'NORMAL')
+                type_eff = self._get_type_effectiveness(move_type, opponent)
 
-        # Preserve Tauros for late game cleanup
+                if type_eff >= 2.0:
+                    offensive_bonus += 100
+                elif type_eff >= 1.5:
+                    offensive_bonus += 50
+                elif type_eff == 0:
+                    offensive_bonus -= 100  # Walled
+
+        score += offensive_bonus
+
+        # Preserve Tauros for late-game sweep
         if switch_name == "tauros":
             alive_count = sum(1 for p in battle.team.values() if not p.fainted)
-            if alive_count > 3:
-                score -= 50  # Don't bring Tauros too early
+            # Check if opponent team is weakened (~50% HP)
+            opp_weakened = True
+            for p in battle.opponent_team.values():
+                if p and not p.fainted:
+                    if hasattr(p, 'current_hp_fraction') and p.current_hp_fraction > 0.6:
+                        opp_weakened = False
+                        break
+
+            if alive_count > 3 and not opp_weakened:
+                score -= 100  # Don't bring Tauros too early
+            elif opp_weakened:
+                score += 150  # Time to sweep!
+
+        # Chansey for walling special attackers
+        if switch_name == "chansey":
+            # Chansey walls special attackers
+            if opponent.type_1 and opponent.type_1.name.upper() in ["PSYCHIC", "ICE", "ELECTRIC", "WATER", "GRASS"]:
+                score += 80
+
+        # Status considerations
+        if switch.status:
+            score -= 50  # Don't want to switch in damaged mon unless necessary
 
         return score
 
