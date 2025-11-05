@@ -4,6 +4,8 @@
 **Repository:** https://github.com/yeungjosh/pokechamp
 **Status:** Ready for deployment (heuristics mode recommended)
 
+**Detailed Test Results:** See [VERIFIED_TEST_RESULTS.md](VERIFIED_TEST_RESULTS.md) for complete battle logs and verification
+
 ---
 
 ## Quick Start
