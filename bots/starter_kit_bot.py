@@ -27,7 +27,7 @@ from poke_env.environment.pokemon import Pokemon
 from poke_env.environment.abstract_battle import AbstractBattle
 from poke_env.player.battle_order import BattleOrder
 from poke_env.player.local_simulation import LocalSim
-from poke_env.player.prompts import state_translate
+from pokechamp.prompts import state_translate
 
 
 class StarterKitBot(LLMPlayer):

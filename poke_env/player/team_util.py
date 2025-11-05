@@ -12,6 +12,7 @@ import os
 import random
 from pokechamp.llm_vgc_player import LLMVGCPlayer
 from pokechamp.mcp_player import MCPPlayer
+from bots.gen1_agent import Gen1Agent
 
 class TeamSet(Teambuilder):
     """Sample from a directory of Showdown team files.
@@ -253,6 +254,11 @@ def get_llm_player(args,
                             account_configuration=AccountConfiguration(f'{USERNAME}{PNUMBER1}', PASSWORD),
                             server_configuration=server_config
                             )
+    elif name == 'gen1_agent':
+        return Gen1Agent(battle_format=battle_format,
+                        account_configuration=AccountConfiguration(f'{USERNAME}{PNUMBER1}', PASSWORD),
+                        server_configuration=server_config
+                        )
     elif 'pokellmon' in name:
         if use_timeout and online:
             from pokechamp.timeout_llm_player import PokellmonTimeoutLLMPlayer
