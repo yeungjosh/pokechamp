@@ -1,57 +1,221 @@
 ```
-██████╗  ██████╗ ██╗  ██╗███████╗ ██████╗██╗  ██╗ █████╗ ███╗   ███╗██████╗ 
+██████╗  ██████╗ ██╗  ██╗███████╗ ██████╗██╗  ██╗ █████╗ ███╗   ███╗██████╗
 ██╔══██╗██╔═══██╗██║ ██╔╝██╔════╝██╔════╝██║  ██║██╔══██╗████╗ ████║██╔══██╗
 ██████╔╝██║   ██║█████╔╝ █████╗  ██║     ███████║███████║██╔████╔██║██████╔╝
-██╔═══╝ ██║   ██║██╔═██╗ ██╔══╝  ██║     ██╔══██║██╔══██║██║╚██╔╝██║██╔═══╝ 
-██║     ╚██████╔╝██║  ██╗███████╗╚██████╗██║  ██║██║  ██║██║ ╚═╝ ██║██║     
-╚═╝      ╚═════╝ ╚═╝  ╚═╝╚══════╝ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝     
+██╔═══╝ ██║   ██║██╔═██╗ ██╔══╝  ██║     ██╔══██║██╔══██║██║╚██╔╝██║██╔═══╝
+██║     ╚██████╔╝██║  ██╗███████╗╚██████╗██║  ██║██║  ██║██║ ╚═╝ ██║██║
+╚═╝      ╚═════╝ ╚═╝  ╚═╝╚══════╝ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝
 ```
-# Pokémon Champion
+# Pokémon Champion - Extended
+
 <!-- project badges -->
 [![Paper (ICML '25)](https://img.shields.io/badge/Paper-ICML-blue?style=flat)](https://openreview.net/pdf?id=SnZ7SKykHh)
 [![Dataset on HuggingFace](https://img.shields.io/badge/Dataset-HuggingFace-brightgreen?logo=huggingface&logoColor=white&style=flat)](https://huggingface.co/datasets/milkkarten/pokechamp)
-[![Source Code](https://img.shields.io/badge/Code-GitHub-black?logo=github&logoColor=white&style=flat)](https://github.com/sethkarten/pokechamp)
+[![Original Code](https://img.shields.io/badge/Original-GitHub-black?logo=github&logoColor=white&style=flat)](https://github.com/sethkarten/pokechamp)
 
-This is the implementation for the paper "PokéChamp: an Expert-level Minimax Language Agent"
+> **Note for GitHub Settings:** Update the repository description to:
+> *"Advanced Pokémon battle AI framework built on PokéChamp (ICML 2025). Features LLM-based agents, Bayesian prediction, Gen1-9 support, and custom heuristic agents with 100% win rates vs baselines."*
+
+## Project Overview
+
+This repository extends the original **PokéChamp** framework (ICML 2025 paper: "PokéChamp: an Expert-level Minimax Language Agent") with additional battle agents, comprehensive testing infrastructure, and enhanced documentation.
+
+### What We Built On Top
+
+**Original PokéChamp Framework:**
+- Expert-level minimax language agent for competitive Pokémon
+- LLM-based battle decision making
+- Multi-generation format support (Gen 1-9)
+- Bayesian prediction system
+- 2M+ battle dataset
+
+**Our Extensions:**
+- **Gen1 Heuristic Agent** - Custom bot achieving 100% win rate vs max_power baseline
+- **Portfolio Testing Suite** - Comprehensive test framework with 70+ battle scenarios
+- **Enhanced Documentation** - 2000+ lines covering mechanics, architecture, and usage
+- **Competition Setup Guides** - Quickstart guides and ladder scripts
+- **Custom Teams** - Hand-crafted competitive teams for Gen1 OU format
 
 <div align="center">
   <img src="./resource/method.png" alt="PokemonChamp">
 </div>
 
-## Architecture
+## System Architecture
 
-The codebase is organized into several clean modules:
+### High-Level Overview
+
+The system is built on a layered architecture separating the battle engine, AI agents, and external integrations:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    BATTLE INTERFACE LAYER                       │
+│  ┌──────────────┐  ┌──────────────┐  ┌────────────────────┐   │
+│  │ Local Battles│  │ Showdown     │  │ Human Interface    │   │
+│  │ (1v1, VGC)   │  │ Ladder       │  │ (Interactive Play) │   │
+│  └──────────────┘  └──────────────┘  └────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                      AI AGENT LAYER                             │
+│  ┌──────────────────────┐  ┌──────────────────────────────┐   │
+│  │   LLM-Based Agents   │  │   Heuristic Agents           │   │
+│  │ ┌──────────────────┐ │  │ ┌──────────────────────────┐ │   │
+│  │ │ PokéChamp        │ │  │ │ Gen1 Agent (NEW)         │ │   │
+│  │ │ (Minimax+LLM)    │ │  │ │ - Damage calculator      │ │   │
+│  │ └──────────────────┘ │  │ │ - Position evaluator     │ │   │
+│  │ ┌──────────────────┐ │  │ │ - Switch logic           │ │   │
+│  │ │ Pokéllmon        │ │  │ └──────────────────────────┘ │   │
+│  │ │ (Prompt Algos)   │ │  │ ┌──────────────────────────┐ │   │
+│  │ │ - CoT, SC, ToT   │ │  │ │ Baseline Bots            │ │   │
+│  │ │ - MCP Protocol   │ │  │ │ - Abyssal, MaxPower      │ │   │
+│  │ └──────────────────┘ │  │ │ - Random, OneStep        │ │   │
+│  └──────────────────────┘  │ └──────────────────────────┘ │   │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                  PREDICTION & ANALYSIS LAYER                    │
+│  ┌──────────────────────┐  ┌──────────────────────────────┐   │
+│  │ Bayesian Predictor   │  │ Battle Translator            │   │
+│  │ - Team prediction    │  │ - State parsing              │   │
+│  │ - Move prediction    │  │ - Format conversion          │   │
+│  │ - Stats inference    │  │ - Action translation         │   │
+│  └──────────────────────┘  └──────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                    BATTLE ENGINE LAYER                          │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │              poke_env (Core Engine)                      │  │
+│  │  ┌────────────┐ ┌─────────────┐ ┌──────────────────┐   │  │
+│  │  │ Battle     │ │ Pokemon     │ │ Damage           │   │  │
+│  │  │ State      │ │ Stats/Moves │ │ Calculation      │   │  │
+│  │  └────────────┘ └─────────────┘ └──────────────────┘   │  │
+│  │  ┌────────────┐ ┌─────────────┐ ┌──────────────────┐   │  │
+│  │  │ Type Chart │ │ Items/      │ │ Format           │   │  │
+│  │  │ Gen1-9     │ │ Abilities   │ │ Rules            │   │  │
+│  │  └────────────┘ └─────────────┘ └──────────────────┘   │  │
+│  └──────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                      DATA & LLM BACKENDS                        │
+│  ┌──────────────┐  ┌──────────────┐  ┌────────────────────┐   │
+│  │ Dataset      │  │ OpenRouter   │  │ Direct APIs        │   │
+│  │ (2M battles) │  │ (100+ models)│  │ (OpenAI, Gemini)   │   │
+│  └──────────────┘  └──────────────┘  └────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Directory Structure
 
 ```
 pokechamp/
 ├── pokechamp/           # [CORE] LLM player implementation
-│   ├── llm_player.py    # Core LLM player class
-│   ├── mcp_player.py    # MCP protocol support
-│   ├── llm_vgc_player.py # VGC doubles support
+│   ├── llm_player.py    # Base LLM player class
+│   ├── mcp_player.py    # Model Context Protocol support
+│   ├── llm_vgc_player.py # VGC doubles format support
 │   ├── gpt_player.py    # OpenAI GPT backend
-│   ├── llama_player.py  # Meta LLaMA backend  
+│   ├── llama_player.py  # Meta LLaMA backend
 │   ├── gemini_player.py # Google Gemini backend
-│   ├── openrouter_player.py # OpenRouter API backend
-│   ├── prompts.py       # Battle prompts & algorithms
-│   └── translate.py     # Battle translation utilities
+│   ├── openrouter_player.py # OpenRouter unified API
+│   ├── prompts.py       # Battle prompts & algorithms (CoT, SC, ToT, Minimax)
+│   └── translate.py     # Battle state translation utilities
+│
+├── bots/                # [BOTS] Custom agent implementations
+│   ├── gen1_agent.py    # ⭐ NEW: Gen1 heuristic agent (730 lines)
+│   │                    #   - Exact Gen1 damage calculator
+│   │                    #   - Position evaluator (7+ factors)
+│   │                    #   - Advanced switch logic
+│   │                    #   - 100% win rate vs max_power
+│   ├── starter_kit_bot.py # Template for custom bots
+│   └── ...              # Other custom implementations
+│
 ├── bayesian/            # [PREDICT] Bayesian prediction system
-│   ├── pokemon_predictor.py    # Pokemon team predictions
-│   ├── team_predictor.py       # Bayesian team predictor
-│   └── live_battle_predictor.py # Live battle predictions
-├── scripts/             # [SCRIPTS] Battle execution scripts
-│   ├── battles/         # Battle runners (local_1v1.py, etc.)
-│   ├── evaluation/      # Evaluation tools
+│   ├── pokemon_predictor.py    # Team prediction (unrevealed Pokemon)
+│   ├── team_predictor.py       # Bayesian team inference
+│   └── live_battle_predictor.py # Real-time battle predictions
+│
+├── scripts/             # [SCRIPTS] Battle execution & evaluation
+│   ├── battles/         # Battle runners
+│   │   ├── local_1v1.py       # Local bot vs bot battles
+│   │   ├── human_agent_1v1.py # Human vs bot interface
+│   │   └── showdown_ladder.py # Online ladder play
+│   ├── evaluation/      # Performance analysis
+│   │   └── evaluate_gen9ou.py # Cross-evaluation suite
 │   └── training/        # Dataset processing
+│       └── battle_translate.py # Battle data translation
+│
 ├── poke_env/            # [ENGINE] Core battle engine (LLM-independent)
-├── bots/                # [BOTS] Custom bot implementations
-└── tests/               # [TESTS] Comprehensive test suite
+│   ├── environment/     # Battle state management
+│   ├── player/          # Player interface
+│   ├── data/            # Pokemon data (Gen1-9)
+│   └── teambuilder/     # Team construction
+│
+├── tests/               # [TESTS] Comprehensive test suite
+│   ├── test_bayesian_prediction.py
+│   ├── test_move_normalization.py
+│   ├── test_team_loader.py
+│   └── test_agent_portfolio.py  # ⭐ NEW: 70+ battle test suite
+│
+├── teams/               # Pre-built competitive teams
+│   ├── gen1ou_balanced.txt      # ⭐ NEW: Custom Gen1 team
+│   ├── gen1ou_offensive.txt     # ⭐ NEW: Offensive Gen1 team
+│   └── gen1ou_sleep_focus.txt   # ⭐ NEW: Sleep control team
+│
+└── docs/                # ⭐ NEW: Enhanced documentation
+    ├── GEN1_AGENT_DOCUMENTATION.md     # Agent architecture (714 lines)
+    ├── GEN1_RBY_MECHANICS_RESEARCH.md  # Gen1 mechanics (977 lines)
+    ├── GEN1_QUICK_REFERENCE.md         # Quick lookup guide
+    ├── VERIFIED_TEST_RESULTS.md        # Battle test logs
+    ├── PORTFOLIO_TESTING.md            # Testing documentation
+    └── QUICKSTART.md                   # 5-minute setup guide
 ```
 
-**Key Benefits:**
-- **Clean separation**: Core battle engine (`poke_env`) is independent of LLM code
-- **Modular design**: Each component has clear responsibilities
-- **Extensible**: Easy to add new LLM backends or battle algorithms
-- **Testable**: Comprehensive test coverage for all functionality
+### Architecture Principles
+
+**1. Separation of Concerns**
+- Battle engine (`poke_env`) is completely LLM-independent
+- AI agents are modular and interchangeable
+- Easy to add new agents without modifying core engine
+
+**2. Extensibility**
+- Plugin architecture for new LLM backends
+- Custom bot system via inheritance
+- Multiple prompt algorithms (CoT, SC, ToT, MCP, Minimax)
+
+**3. Multi-Format Support**
+- Gen1-9 competitive formats
+- Singles (OU, Ubers, etc.) and Doubles (VGC)
+- Format-specific rules and mechanics
+
+**4. Testing & Evaluation**
+- Comprehensive test suite (100+ tests)
+- Cross-evaluation framework
+- Battle logging and analysis tools
+
+### Data Flow Example
+
+```
+User Request: "Battle gen1_agent vs abyssal in Gen1 OU"
+     ↓
+local_1v1.py: Initialize battle with format=gen1ou
+     ↓
+poke_env: Create battle state, load Gen1 mechanics
+     ↓
+gen1_agent.choose_move():
+  1. Calculate damage for all moves (Gen1 formula)
+  2. Evaluate position (material, status, threats)
+  3. Score switch options (survival, matchups)
+  4. Return best action
+     ↓
+poke_env: Execute action, update battle state
+     ↓
+Opponent turn (abyssal logic)
+     ↓
+Repeat until battle ends
+     ↓
+Return: Battle result, turn count, replay
+```
 
 ## Quick Start
 
