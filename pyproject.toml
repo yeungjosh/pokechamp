@@ -34,14 +34,14 @@ dependencies = [
     "scipy",
     "scikit-learn",
     
-    # AI/ML dependencies
-    "torch",
-    "transformers",
-    "accelerate",
-    "wandb",
-    "evaluate",
-    "datasets",
-    "bitsandbytes",
+    # AI/ML dependencies (optional for local models)
+    # "torch",
+    # "transformers",
+    # "accelerate",
+    # "wandb",
+    # "evaluate",
+    # "datasets",
+    # "bitsandbytes",
     
     # LLM API clients
     "openai",

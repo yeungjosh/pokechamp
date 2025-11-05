@@ -16,7 +16,12 @@ from poke_env.environment.side_condition import SideCondition
 from poke_env.environment.status import Status
 from poke_env.player.battle_order import BattleOrder
 from pokechamp.gpt_player import GPTPlayer
-from pokechamp.llama_player import LLAMAPlayer
+
+# Optional import for LLaMA (requires torch)
+try:
+    from pokechamp.llama_player import LLAMAPlayer
+except ImportError:
+    LLAMAPlayer = None
 
 # Avoid circular import by importing here
 try:

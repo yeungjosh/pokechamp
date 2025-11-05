@@ -80,7 +80,7 @@ parser.add_argument("--opponent_device", type=int, default=0)
 
 # Shared arguments
 parser.add_argument("--temperature", type=float, default=0.3)
-parser.add_argument("--battle_format", default="gen9ou", choices=["gen8randombattle", "gen8ou", "gen9ou", "gen9randombattle", "gen9vgc2025regi"])
+parser.add_argument("--battle_format", default="gen9ou", choices=["gen1ou", "gen8randombattle", "gen8ou", "gen9ou", "gen9randombattle", "gen9vgc2025regi"])
 parser.add_argument("--log_dir", type=str, default="./battle_log/one_vs_one")
 parser.add_argument("--N", type=int, default=25)
 parser.add_argument("--seed", type=int, default=None, help="Random seed for reproducibility")
