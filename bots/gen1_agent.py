@@ -101,8 +101,9 @@ class Gen1Agent(Player):
 
         self.gen_data = GenData.from_format(battle_format)
         self.debug = False
-        self.use_expectimax = True  # Toggle for expectimax search
+        self.use_expectimax = False  # Disabled by default (too slow for ladder)
         self.max_depth = 1  # Search depth (1-ply lookahead)
+        self.fast_mode = True  # Only evaluate top moves with expectimax
 
     def choose_move(self, battle: Battle):
         """
@@ -154,81 +155,103 @@ class Gen1Agent(Player):
         """
         Expectimax search with probability handling for Gen1 mechanics.
         Returns best move/switch after considering outcomes.
+
+        Optimized: Only use expectimax for moves (probabilistic).
+        Switches evaluated with heuristics (deterministic).
+
+        Fast mode: Pre-filter to top moves before full expectimax.
         """
         best_action = None
         best_value = float('-inf')
 
-        # Evaluate each possible action
-        all_actions = list(battle.available_moves) + list(battle.available_switches)
+        # Cache base position for efficiency
+        base_position_value = self._evaluate_position(battle)
 
-        for action in all_actions:
-            # Calculate expected value of this action
-            expected_value = self._expectimax_value(battle, action, depth=0, is_our_turn=True)
+        # Fast mode: pre-filter moves with quick heuristic
+        moves_to_evaluate = battle.available_moves
+        if self.fast_mode and len(battle.available_moves) > 2:
+            # Quick score all moves
+            move_quick_scores = [(move, self._score_move(battle, move)) for move in battle.available_moves]
+            # Sort and take top 2-3 candidates
+            move_quick_scores.sort(key=lambda x: x[1], reverse=True)
+            moves_to_evaluate = [m[0] for m in move_quick_scores[:3]]
 
+        # Evaluate top moves with expectimax (probabilistic outcomes)
+        for move in moves_to_evaluate:
+            expected_value = self._expectimax_value(battle, move, depth=0,
+                                                    base_position=base_position_value)
             if expected_value > best_value:
                 best_value = expected_value
-                best_action = action
+                best_action = move
+
+        # Evaluate switches with heuristics (faster, deterministic)
+        # Only consider switching if no good move found or in danger
+        switch_threshold = best_value - 50  # Only consider switches if competitive
+
+        for switch in battle.available_switches:
+            # Quick heuristic evaluation (no expectimax needed for deterministic switch)
+            switch_value = self._score_switch(battle, switch)
+
+            if switch_value > switch_threshold:
+                # More detailed evaluation only for promising switches
+                switch_value += base_position_value * 0.3
+
+                if switch_value > best_value:
+                    best_value = switch_value
+                    best_action = switch
 
         return best_action
 
-    def _expectimax_value(self, battle: Battle, action, depth: int, is_our_turn: bool) -> float:
+    def _expectimax_value(self, battle: Battle, action, depth: int,
+                          base_position: float = None) -> float:
         """
-        Calculate expected value of an action considering probabilistic outcomes.
+        Calculate expected value of a move considering probabilistic outcomes.
+
+        Optimized version that uses cached base position.
 
         Handles:
         - Critical hits (Gen1 rates)
         - Move accuracy (1/256 miss)
         - Damage variance (217-255/255)
-        - Opponent responses
         """
-        if depth >= self.max_depth:
-            # Leaf node: evaluate position
-            return self._evaluate_position(battle)
+        if depth >= self.max_depth or not battle.opponent_active_pokemon or not battle.active_pokemon:
+            return base_position if base_position is not None else self._evaluate_position(battle)
 
-        if not battle.opponent_active_pokemon or not battle.active_pokemon:
-            return self._evaluate_position(battle)
-
+        # This function now only handles moves (switches handled separately)
+        move = action
         attacker = battle.active_pokemon
-        defender = battle.opponent_active_pokemon
 
-        # Check if action is a move or switch
-        is_move = isinstance(action, Move)
+        # Calculate probabilities
+        crit_rate = self._get_crit_rate(attacker, move)
+        hit_rate = self._get_accuracy(move)
 
-        if is_move:
-            move = action
+        # Use cached base position for miss case
+        if base_position is None:
+            base_position = self._evaluate_position(battle)
 
-            # Calculate probabilities
-            crit_rate = self._get_crit_rate(attacker, move)
-            hit_rate = self._get_accuracy(move)
+        # Expected value considering hit/miss and crit/no-crit
+        expected_value = 0.0
 
-            # Expected value considering hit/miss and crit/no-crit
-            expected_value = 0.0
+        # Case 1: Move misses
+        miss_prob = 1 - hit_rate
+        if miss_prob > 0.01:  # Skip if negligible
+            expected_value += miss_prob * base_position
 
-            # Case 1: Move misses (1/256 base miss in Gen1)
-            miss_prob = 1 - hit_rate
-            if miss_prob > 0:
-                # Position unchanged
-                expected_value += miss_prob * self._evaluate_position(battle)
+        # Case 2: Move hits, no crit
+        no_crit_prob = hit_rate * (1 - crit_rate)
+        if no_crit_prob > 0.01:
+            outcome_value = self._simulate_move_outcome(battle, move, is_crit=False,
+                                                        base_position=base_position)
+            expected_value += no_crit_prob * outcome_value
 
-            # Case 2: Move hits, no crit
-            no_crit_prob = hit_rate * (1 - crit_rate)
-            if no_crit_prob > 0:
-                outcome_value = self._simulate_move_outcome(battle, move, is_crit=False)
-                expected_value += no_crit_prob * outcome_value
+        # Case 3: Move hits, crit
+        crit_prob = hit_rate * crit_rate
+        if crit_prob > 0.01:
+            outcome_value = self._simulate_move_outcome(battle, move, is_crit=True,
+                                                        base_position=base_position)
+            expected_value += crit_prob * outcome_value
 
-            # Case 3: Move hits, crit
-            crit_prob = hit_rate * crit_rate
-            if crit_prob > 0:
-                outcome_value = self._simulate_move_outcome(battle, move, is_crit=True)
-                expected_value += crit_prob * outcome_value
-
-            return expected_value
-
-        else:
-            # Switching action
-            # Switching is deterministic in Gen1 (no free turn if we switch first)
-            # Evaluate position after switch
-            return self._evaluate_switch_outcome(battle, action)
+        return expected_value
 
     def _get_accuracy(self, move: Move) -> float:
         """
@@ -244,14 +267,15 @@ class Gen1Agent(Player):
 
         return gen1_accuracy
 
-    def _simulate_move_outcome(self, battle: Battle, move: Move, is_crit: bool) -> float:
+    def _simulate_move_outcome(self, battle: Battle, move: Move, is_crit: bool,
+                                base_position: float = None) -> float:
         """
         Simulate outcome of a move and evaluate resulting position.
 
-        Simplified: assumes damage is dealt, checks for KO, returns position eval.
+        Optimized: uses cached base position to avoid recalculation.
         """
         if not battle.opponent_active_pokemon:
-            return self._evaluate_position(battle)
+            return base_position if base_position is not None else self._evaluate_position(battle)
 
         attacker = battle.active_pokemon
         defender = battle.opponent_active_pokemon
@@ -265,8 +289,8 @@ class Gen1Agent(Player):
         resulting_hp = max(0, defender_hp - avg_dmg)
         resulting_hp_frac = resulting_hp / defender.max_hp if hasattr(defender, 'max_hp') else resulting_hp / 350
 
-        # Evaluate outcome
-        score = self._evaluate_position(battle)
+        # Start with base position (or calculate if not cached)
+        score = base_position if base_position is not None else self._evaluate_position(battle)
 
         # Bonus for damage dealt
         score += avg_dmg / 2
@@ -285,7 +309,6 @@ class Gen1Agent(Player):
                 score += 350
 
         # Penalty for opponent's likely counter-attack (simplified)
-        # Assume opponent deals ~25% damage back
         if resulting_hp_frac > 0:
             score -= 50
 
