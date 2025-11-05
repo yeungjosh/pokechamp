@@ -13,8 +13,6 @@
 [![Dataset on HuggingFace](https://img.shields.io/badge/Dataset-HuggingFace-brightgreen?logo=huggingface&logoColor=white&style=flat)](https://huggingface.co/datasets/milkkarten/pokechamp)
 [![Original Code](https://img.shields.io/badge/Original-GitHub-black?logo=github&logoColor=white&style=flat)](https://github.com/sethkarten/pokechamp)
 
-> **Note for GitHub Settings:** Update the repository description to:
-> *"Advanced Pokémon battle AI framework built on PokéChamp (ICML 2025). Features LLM-based agents, Bayesian prediction, Gen1-9 support, and custom heuristic agents with 100% win rates vs baselines."*
 
 ## Project Overview
 
