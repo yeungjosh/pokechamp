@@ -1,0 +1,47 @@
+# GitHub Repository Description Update
+
+## To Update on GitHub Website:
+
+1. Go to: https://github.com/yeungjosh/pokechamp
+2. Click the ⚙️ (gear icon) next to "About" on the right sidebar
+3. Replace the description with:
+
+---
+
+**SUGGESTED DESCRIPTION:**
+
+Built on PokéChamp (ICML 2025) + Custom Gen1 Battle AI achieving 90% win rate. Exact Gen1 mechanics, position evaluation, advanced switch logic. 730 lines Python, 2000+ lines docs.
+
+---
+
+**ALTERNATIVE SHORTER:**
+
+Extended PokéChamp framework with Gen1 RBY OU battle AI. 90% win rate vs baselines. Heuristic-based decision making with exact Gen1 mechanics.
+
+---
+
+**ALTERNATIVE TECHNICAL:**
+
+PokéChamp + Gen1Agent: Heuristic battle AI with exact damage calculation, position evaluation (7+ factors), and strategic switch logic. 100% vs max_power, 80% vs abyssal.
+
+---
+
+## Topics to Add:
+
+pokemon, battle-ai, reinforcement-learning, game-ai, pokemon-showdown, gen1, rby, competitive-pokemon, heuristic-algorithms, position-evaluation, python, machine-learning, icml
+
+---
+
+## Website URL:
+
+Leave blank or use: https://github.com/yeungjosh/pokechamp
+
+---
+
+## Current Description (to replace):
+
+"Official repository of the spotlight ICML 2025 paper, PokeChamp: an Expert-level Minimax Language Agent."
+
+---
+
+**Note:** The new description acknowledges the original work while highlighting your Gen1Agent contribution.
