@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}PokéChamp - Home{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <div class="hero-content">
+        <h1 class="hero-title">
+            <span class="pixel-text">POKÉCHAMP</span>
+        </h1>
+        <p class="hero-subtitle">Expert-level Minimax Language Agent</p>
+        <p class="hero-description">
+            An AI battle system combining LLM-based reasoning with heuristic strategies
+            to achieve competitive-level Pokémon gameplay
+        </p>
+        <div class="hero-buttons">
+            <a href="/battle" class="btn btn-primary">Start Battle</a>
+            <a href="/agents" class="btn btn-secondary">View Agents</a>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Features Section -->
+    <section class="section">
+        <h2 class="section-title">✨ Key Features</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🤖</div>
+                <h3>Multiple AI Agents</h3>
+                <p>From expert-level minimax algorithms to simple baselines - compare different strategies</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚔️</div>
+                <h3>Live Battle Simulation</h3>
+                <p>Watch agents battle in real-time with turn-by-turn visualization</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Performance Analytics</h3>
+                <p>Track win rates, battle statistics, and agent performance metrics</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎮</div>
+                <h3>Multi-Generation Support</h3>
+                <p>Battle across Gen 1-9 formats including singles and doubles</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🧠</div>
+                <h3>Bayesian Predictions</h3>
+                <p>Advanced team and move prediction using Bayesian inference</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📚</div>
+                <h3>Open Source</h3>
+                <p>Built on a comprehensive battle engine with 2M+ battle dataset</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Available Agents -->
+    <section class="section">
+        <h2 class="section-title">🤖 Available Agents</h2>
+        <div class="agents-preview">
+            {% for agent_id, agent in agents.items() %}
+            <div class="agent-preview-card" style="border-left: 4px solid {{ agent.color }}">
+                <h3>{{ agent.name }}</h3>
+                <p class="agent-type">{{ agent.type }} • {{ agent.strength }}</p>
+                <p class="agent-desc">{{ agent.description }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="section-center">
+            <a href="/agents" class="btn btn-primary">View All Agents</a>
+        </div>
+    </section>
+
+    <!-- Quick Stats -->
+    <section class="section">
+        <h2 class="section-title">📈 System Overview</h2>
+        <div class="stats-overview">
+            <div class="stat-card">
+                <div class="stat-value">{{ agents|length }}</div>
+                <div class="stat-label">Available Agents</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ formats|length }}</div>
+                <div class="stat-label">Battle Formats</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">2M+</div>
+                <div class="stat-label">Training Battles</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">Gen 1-9</div>
+                <div class="stat-label">Generations</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Architecture Overview -->
+    <section class="section">
+        <h2 class="section-title">🏗️ Architecture</h2>
+        <div class="architecture-info">
+            <div class="arch-layer">
+                <h3>🎯 Battle Interface Layer</h3>
+                <p>Local battles, Showdown ladder integration, human interface</p>
+            </div>
+            <div class="arch-arrow">↓</div>
+            <div class="arch-layer">
+                <h3>🤖 AI Agent Layer</h3>
+                <p>LLM-based agents (PokéChamp, Pokéllmon) + Heuristic agents (Gen1, Abyssal)</p>
+            </div>
+            <div class="arch-arrow">↓</div>
+            <div class="arch-layer">
+                <h3>🔮 Prediction & Analysis Layer</h3>
+                <p>Bayesian predictor, battle translator, state parsing</p>
+            </div>
+            <div class="arch-arrow">↓</div>
+            <div class="arch-layer">
+                <h3>⚙️ Battle Engine Layer</h3>
+                <p>poke_env core engine with damage calculation and format rules</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="section cta-section">
+        <h2 class="section-title">Ready to Battle?</h2>
+        <p class="cta-text">
+            Select your agents, choose a format, and watch AI battle AI in real-time!
+        </p>
+        <div class="hero-buttons">
+            <a href="/battle" class="btn btn-primary btn-lg">Launch Battle Simulator</a>
+        </div>
+    </section>
+</div>
+{% endblock %}

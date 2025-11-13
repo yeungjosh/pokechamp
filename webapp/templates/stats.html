@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Statistics - PokéChamp{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1 class="page-title">📊 Battle Statistics</h1>
+        <p class="page-subtitle">Performance metrics and battle history</p>
+    </div>
+
+    <!-- Overall Stats -->
+    <section class="section">
+        <h2 class="section-title">📈 Overall Performance</h2>
+        <div class="stats-grid">
+            {% for agent_id, agent in agents.items() %}
+            <div class="stat-card-detailed" style="border-left: 4px solid {{ agent.color }}">
+                <h3>{{ agent.name }}</h3>
+                <div class="stat-details">
+                    {% if stats.get(agent_id) and stats[agent_id].battles > 0 %}
+                    <div class="stat-row">
+                        <span class="label">Total Battles:</span>
+                        <span class="value">{{ stats[agent_id].battles }}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="label">Wins:</span>
+                        <span class="value success">{{ stats[agent_id].wins }}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="label">Losses:</span>
+                        <span class="value danger">{{ stats[agent_id].losses }}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="label">Win Rate:</span>
+                        <span class="value highlight">{{ "%.1f"|format(stats[agent_id].win_rate) }}%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ stats[agent_id].win_rate }}%; background: {{ agent.color }}"></div>
+                    </div>
+                    {% else %}
+                    <p class="no-data">No battles recorded yet</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Battle History -->
+    <section class="section">
+        <h2 class="section-title">🕐 Recent Battle History</h2>
+        {% if battle_history %}
+        <div class="history-container">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Player 1</th>
+                        <th></th>
+                        <th>Player 2</th>
+                        <th>Winner</th>
+                        <th>Turns</th>
+                        <th>Format</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for battle in battle_history|reverse %}
+                    <tr>
+                        <td>
+                            <span class="timestamp">
+                                {{ battle.timestamp.split('T')[1][:5] if 'T' in battle.timestamp else '-' }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="agent-name {% if battle.winner == battle.player1 %}winner{% endif %}">
+                                {{ agents[battle.player1].name if battle.player1 in agents else battle.player1 }}
+                            </span>
+                        </td>
+                        <td class="vs-cell">vs</td>
+                        <td>
+                            <span class="agent-name {% if battle.winner == battle.player2 %}winner{% endif %}">
+                                {{ agents[battle.player2].name if battle.player2 in agents else battle.player2 }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="winner-badge">
+                                {{ agents[battle.winner].name if battle.winner in agents else battle.winner }}
+                            </span>
+                        </td>
+                        <td>{{ battle.turns }}</td>
+                        <td>
+                            <span class="format-badge">{{ battle.format }}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p>No battles recorded yet. <a href="/battle">Start your first battle!</a></p>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- Leaderboard -->
+    <section class="section">
+        <h2 class="section-title">🏆 Leaderboard</h2>
+        <div class="leaderboard">
+            {% set sorted_agents = stats.items() | sort(attribute='1.win_rate', reverse=True) %}
+            {% for agent_id, agent_stat in sorted_agents %}
+            {% if agent_stat.battles > 0 %}
+            <div class="leaderboard-item">
+                <div class="rank">
+                    {% if loop.index == 1 %}🥇
+                    {% elif loop.index == 2 %}🥈
+                    {% elif loop.index == 3 %}🥉
+                    {% else %}{{ loop.index }}
+                    {% endif %}
+                </div>
+                <div class="leaderboard-info">
+                    <div class="leaderboard-name">{{ agents[agent_id].name }}</div>
+                    <div class="leaderboard-stats">
+                        {{ agent_stat.wins }}W - {{ agent_stat.losses }}L
+                        ({{ agent_stat.battles }} battles)
+                    </div>
+                </div>
+                <div class="leaderboard-score">
+                    {{ "%.1f"|format(agent_stat.win_rate) }}%
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Head-to-Head Matrix (Coming Soon) -->
+    <section class="section">
+        <h2 class="section-title">⚔️ Head-to-Head Matrix</h2>
+        <div class="coming-soon">
+            <p>Detailed matchup statistics coming soon!</p>
+            <p class="small">This will show win rates for each agent pair</p>
+        </div>
+    </section>
+
+    <!-- Actions -->
+    <div class="section-center">
+        <a href="/battle" class="btn btn-primary btn-lg">Start New Battle</a>
+        <button id="refreshStats" class="btn btn-secondary btn-lg">Refresh Stats</button>
+    </div>
+</div>
+
+<script>
+document.getElementById('refreshStats').addEventListener('click', function() {
+    location.reload();
+});
+</script>
+{% endblock %}

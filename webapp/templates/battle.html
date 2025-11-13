@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}Battle Simulator - PokéChamp{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="battle-header">
+        <h1 class="page-title">⚔️ Battle Simulator</h1>
+        <p class="page-subtitle">Watch AI agents battle in real-time</p>
+    </div>
+
+    <!-- Battle Configuration -->
+    <div class="battle-config" id="battleConfig">
+        <div class="config-section">
+            <h2>Configure Battle</h2>
+            <div class="config-grid">
+                <div class="config-item">
+                    <label for="player1Select">Player 1</label>
+                    <select id="player1Select" class="select-box">
+                        {% for agent_id, agent in agents.items() %}
+                        <option value="{{ agent_id }}" {% if agent_id == 'gen1_agent' %}selected{% endif %}>
+                            {{ agent.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <div id="player1Info" class="agent-info"></div>
+                </div>
+
+                <div class="config-vs">
+                    <span class="vs-text">VS</span>
+                </div>
+
+                <div class="config-item">
+                    <label for="player2Select">Player 2</label>
+                    <select id="player2Select" class="select-box">
+                        {% for agent_id, agent in agents.items() %}
+                        <option value="{{ agent_id }}" {% if agent_id == 'abyssal' %}selected{% endif %}>
+                            {{ agent.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <div id="player2Info" class="agent-info"></div>
+                </div>
+            </div>
+
+            <div class="config-format">
+                <label for="formatSelect">Battle Format</label>
+                <select id="formatSelect" class="select-box">
+                    {% for format_id, format_name in formats.items() %}
+                    <option value="{{ format_id }}" {% if format_id == 'gen1ou' %}selected{% endif %}>
+                        {{ format_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button id="startBattleBtn" class="btn btn-primary btn-lg">Start Battle</button>
+        </div>
+    </div>
+
+    <!-- Battle Arena -->
+    <div class="battle-arena" id="battleArena" style="display: none;">
+        <div class="battle-status">
+            <h2 id="battleTitle">Battle in Progress</h2>
+            <div class="battle-info">
+                <span id="battleTurn">Turn: 0</span>
+                <span id="battleFormat"></span>
+            </div>
+        </div>
+
+        <!-- Pokemon Display -->
+        <div class="pokemon-display">
+            <div class="pokemon-side player-side">
+                <div class="pokemon-card">
+                    <h3 class="pokemon-name" id="player1Name">-</h3>
+                    <div class="pokemon-sprite" id="player1Sprite">🐉</div>
+                    <div class="pokemon-hp">
+                        <div class="hp-label">HP</div>
+                        <div class="hp-bar-container">
+                            <div class="hp-bar" id="player1HP" style="width: 100%"></div>
+                        </div>
+                        <div class="hp-text" id="player1HPText">100%</div>
+                    </div>
+                    <div class="pokemon-status" id="player1Status"></div>
+                    <div class="pokemon-types" id="player1Types"></div>
+                </div>
+                <div class="team-preview" id="player1Team"></div>
+            </div>
+
+            <div class="battle-middle">
+                <div class="vs-indicator">⚔️</div>
+            </div>
+
+            <div class="pokemon-side opponent-side">
+                <div class="pokemon-card">
+                    <h3 class="pokemon-name" id="player2Name">-</h3>
+                    <div class="pokemon-sprite" id="player2Sprite">🐲</div>
+                    <div class="pokemon-hp">
+                        <div class="hp-label">HP</div>
+                        <div class="hp-bar-container">
+                            <div class="hp-bar" id="player2HP" style="width: 100%"></div>
+                        </div>
+                        <div class="hp-text" id="player2HPText">100%</div>
+                    </div>
+                    <div class="pokemon-status" id="player2Status"></div>
+                    <div class="pokemon-types" id="player2Types"></div>
+                </div>
+                <div class="team-preview" id="player2Team"></div>
+            </div>
+        </div>
+
+        <!-- Battle Log -->
+        <div class="battle-log">
+            <h3>Battle Log</h3>
+            <div class="log-container" id="battleLog">
+                <div class="log-entry">Waiting for battle to start...</div>
+            </div>
+        </div>
+
+        <!-- Battle Result -->
+        <div class="battle-result" id="battleResult" style="display: none;">
+            <h2 id="resultTitle">Battle Complete!</h2>
+            <div class="result-content">
+                <div class="winner-display" id="winnerDisplay"></div>
+                <div class="result-stats">
+                    <p>Total Turns: <span id="resultTurns">0</span></p>
+                </div>
+                <button id="newBattleBtn" class="btn btn-primary">Start New Battle</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Battle Events Feed -->
+    <div class="events-feed" id="eventsFeed" style="display: none;">
+        <h3>Recent Events</h3>
+        <div class="events-container" id="eventsContainer">
+            <div class="event-item">No events yet</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Pass agent data to JavaScript
+    const AGENTS_DATA = {{ agents | tojson }};
+</script>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/battle.js') }}"></script>
+{% endblock %}

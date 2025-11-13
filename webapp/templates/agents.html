@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Agents - PokéChamp{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1 class="page-title">🤖 Agent Showcase</h1>
+        <p class="page-subtitle">Explore the different AI agents and their strategies</p>
+    </div>
+
+    <!-- Agents Grid -->
+    <div class="agents-grid">
+        {% for agent_id, agent in agents.items() %}
+        <div class="agent-card" style="border-top: 4px solid {{ agent.color }}">
+            <div class="agent-header">
+                <h2 class="agent-title">{{ agent.name }}</h2>
+                <div class="agent-badges">
+                    <span class="badge badge-type">{{ agent.type }}</span>
+                    <span class="badge badge-strength">{{ agent.strength }}</span>
+                </div>
+            </div>
+
+            <div class="agent-body">
+                <p class="agent-description">{{ agent.description }}</p>
+
+                {% if stats.get(agent_id) and stats[agent_id].battles > 0 %}
+                <div class="agent-stats">
+                    <div class="stat-row">
+                        <span class="stat-label">Win Rate:</span>
+                        <span class="stat-value">{{ "%.1f"|format(stats[agent_id].win_rate) }}%</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Battles:</span>
+                        <span class="stat-value">{{ stats[agent_id].battles }}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">W/L:</span>
+                        <span class="stat-value">{{ stats[agent_id].wins }}/{{ stats[agent_id].losses }}</span>
+                    </div>
+                </div>
+                {% else %}
+                <div class="agent-stats">
+                    <p class="no-stats">No battle data yet</p>
+                </div>
+                {% endif %}
+
+                <!-- Performance Bar -->
+                {% if stats.get(agent_id) and stats[agent_id].battles > 0 %}
+                <div class="performance-bar">
+                    <div class="performance-fill"
+                         style="width: {{ stats[agent_id].win_rate }}%; background: {{ agent.color }}"></div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="agent-footer">
+                <a href="/battle?player1={{ agent_id }}&player2=abyssal" class="btn btn-small">Battle This Agent</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Agent Comparison Section -->
+    <section class="section">
+        <h2 class="section-title">📊 Agent Comparison</h2>
+        <div class="comparison-table-container">
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Agent</th>
+                        <th>Type</th>
+                        <th>Strength</th>
+                        <th>Battles</th>
+                        <th>Wins</th>
+                        <th>Losses</th>
+                        <th>Win Rate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for agent_id, agent in agents.items() %}
+                    <tr>
+                        <td><strong>{{ agent.name }}</strong></td>
+                        <td>{{ agent.type }}</td>
+                        <td>{{ agent.strength }}</td>
+                        <td>{{ stats.get(agent_id, {}).get('battles', 0) }}</td>
+                        <td>{{ stats.get(agent_id, {}).get('wins', 0) }}</td>
+                        <td>{{ stats.get(agent_id, {}).get('losses', 0) }}</td>
+                        <td>
+                            {% if stats.get(agent_id) and stats[agent_id].battles > 0 %}
+                                <span class="win-rate">{{ "%.1f"|format(stats[agent_id].win_rate) }}%</span>
+                            {% else %}
+                                <span class="no-data">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Agent Types Info -->
+    <section class="section">
+        <h2 class="section-title">📚 Agent Types Explained</h2>
+        <div class="info-grid">
+            <div class="info-card">
+                <h3>🧠 LLM + Minimax</h3>
+                <p>Combines large language model reasoning with minimax search algorithms for optimal decision making. Evaluates multiple turns ahead.</p>
+            </div>
+            <div class="info-card">
+                <h3>⚙️ Heuristic</h3>
+                <p>Uses hand-crafted rules and damage calculations. Fast and deterministic with no API dependencies.</p>
+            </div>
+            <div class="info-card">
+                <h3>🎲 Random</h3>
+                <p>Baseline agent that selects random valid moves. Useful for comparison and testing.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <div class="section-center">
+        <a href="/battle" class="btn btn-primary btn-lg">Start a Battle</a>
+        <a href="/stats" class="btn btn-secondary btn-lg">View Stats</a>
+    </div>
+</div>
+{% endblock %}

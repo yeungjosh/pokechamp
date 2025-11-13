@@ -33,6 +33,7 @@ This repository extends the original **PokéChamp** framework (ICML 2025 paper: 
 - **Enhanced Documentation** - 2000+ lines covering mechanics, architecture, and usage
 - **Competition Setup Guides** - Quickstart guides and ladder scripts
 - **Custom Teams** - Hand-crafted competitive teams for Gen1 OU format
+- **🎮 Web Showcase Application** - Interactive web UI for live battle simulations and agent comparisons
 
 <div align="center">
   <img src="./resource/method.png" alt="PokemonChamp">
@@ -245,6 +246,25 @@ uv run python run_with_timeout_vgc.py --continuous --max-concurrent 2
 ```sh
 uv run python scripts/evaluation/evaluate_gen9ou.py
 ```
+
+### 🎮 Web Showcase Application
+
+Launch the interactive web interface to watch battles in real-time:
+
+```sh
+# Start the web application
+uv run python webapp/app.py
+
+# Open your browser to http://localhost:5000
+```
+
+**Features:**
+- 🤖 **Live Battle Simulation** - Watch agents battle with turn-by-turn visualization
+- 📊 **Agent Showcase** - Compare different AI strategies and performance
+- 📈 **Statistics Dashboard** - Track win rates and battle history
+- 🎨 **Interactive UI** - Pokemon-themed design with animations
+
+See [webapp/README.md](webapp/README.md) for detailed documentation.
 
 ## Battle Configuration
 
