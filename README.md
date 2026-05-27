@@ -246,6 +246,19 @@ uv run python run_with_timeout_vgc.py --continuous --max-concurrent 2
 uv run python scripts/evaluation/evaluate_gen9ou.py
 ```
 
+### MCP server for teams & results
+
+The `mcp/` directory ships a small [Model Context Protocol](https://modelcontextprotocol.io) server that exposes `teams/` and `test_results/` as structured tools. Useful when driving the repo from an LLM client (Claude Code, Cursor, Codex, etc.) — calls like `list_teams()` or `summarize_latest_run()` replace shelling out to `ls` and `cat`, and the schema stays the same across sessions.
+
+```sh
+cd mcp
+uv venv
+uv pip install 'mcp[cli]>=1.2.0'
+uv run python server.py        # start (stdio)
+```
+
+Tools exposed: `list_teams`, `get_team`, `list_test_results`, `get_test_result`, `summarize_latest_run`. See `mcp/README.md` for client registration (Claude/Cursor/Codex) and the tool schemas.
+
 ## Battle Configuration
 
 ### Local Pokémon Showdown Server Setup

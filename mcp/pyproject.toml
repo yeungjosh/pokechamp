@@ -1,0 +1,8 @@
+[project]
+name = "pokemon-data-mcp"
+version = "0.1.0"
+description = "MCP server exposing pokechamp teams and portfolio test results"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp[cli]>=1.2.0",
+]
