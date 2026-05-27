@@ -259,6 +259,15 @@ def get_llm_player(args,
                         account_configuration=AccountConfiguration(f'{USERNAME}{PNUMBER1}', PASSWORD),
                         server_configuration=server_config
                         )
+    elif name == 'mcts':
+        from bots.mcts_bot import MCTSBot
+        return MCTSBot(battle_format=battle_format,
+                       account_configuration=AccountConfiguration(f'{USERNAME}{PNUMBER1}', PASSWORD),
+                       server_configuration=server_config,
+                       n_iterations=getattr(args, 'mcts_iterations', 100),
+                       max_depth=getattr(args, 'mcts_depth', 3),
+                       time_budget_s=getattr(args, 'mcts_time_budget', 10.0),
+                       )
     elif 'pokellmon' in name:
         if use_timeout and online:
             from pokechamp.timeout_llm_player import PokellmonTimeoutLLMPlayer

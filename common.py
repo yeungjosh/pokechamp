@@ -25,15 +25,19 @@ def get_available_bots():
     if not os.path.exists(bots_dir):
         return bot_names
     
-    # Look for Python files in the bots directory
+    # Look for Python files in the bots directory; skip dunder, leading
+    # underscore (private helpers), and test_* files so they don't show
+    # up as selectable bots on the CLI.
     for filename in os.listdir(bots_dir):
-        if filename.endswith('.py') and not filename.startswith('__'):
-            # Remove .py extension and _bot suffix to get the bot name
-            bot_name = filename[:-3]  # Remove .py
-            if bot_name.endswith('_bot'):
-                bot_name = bot_name[:-4]  # Remove _bot suffix
-            bot_names.append(bot_name)
-    
+        if not filename.endswith('.py'):
+            continue
+        if filename.startswith('_') or filename.startswith('test_'):
+            continue
+        bot_name = filename[:-3]  # Remove .py
+        if bot_name.endswith('_bot'):
+            bot_name = bot_name[:-4]  # Remove _bot suffix
+        bot_names.append(bot_name)
+
     return bot_names
 
 # Get available bot names from the bots folder
